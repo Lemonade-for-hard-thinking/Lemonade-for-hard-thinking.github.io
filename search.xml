@@ -1080,9 +1080,23 @@ JavaScript
       </categories>
   </entry>
   <entry>
-    <title>Web-APIs学习笔记1</title>
-    <url>/2024/08/04/Web-APIs%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B01/</url>
-    <content><![CDATA[<h1 id="web-apis---第1天笔记">Web APIs - 第1天笔记</h1>
+    <title>Web-APIs学习笔记一</title>
+    <url>/2024/08/04/Web-APIs%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E4%B8%80/</url>
+    <content><![CDATA[<p>复习：</p>
+<p>splice() 方法用于添加或删除数组中的元素。</p>
+<p><strong>注意：</strong>这种方法会改变原始数组。</p>
+<ol type="1">
+<li><strong>删除数组：</strong></li>
+</ol>
+<p>splice(起始位置， 删除的个数)</p>
+<p>比如：1</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">let</span> arr = [<span class="string">&#x27;red&#x27;</span>, <span class="string">&#x27;green&#x27;</span>, <span class="string">&#x27;blue&#x27;</span>]</span><br><span class="line">arr.<span class="title function_">splice</span>(<span class="number">1</span>,<span class="number">1</span>) <span class="comment">// 删除green元素</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(arr) <span class="comment">// [&#x27;red, &#x27;blue&#x27;]</span></span><br></pre></td></tr></table></figure>
+<ol start="2" type="1">
+<li><strong>添加元素</strong></li>
+</ol>
+<p>splice(起始位置，删除个数，添加数组元素)</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">let</span> arr = [<span class="string">&#x27;red&#x27;</span>, <span class="string">&#x27;green&#x27;</span>, <span class="string">&#x27;blue&#x27;</span>]</span><br><span class="line"><span class="comment">//arr.splice(1, 0, &#x27;pink&#x27;) // 在索引号是1的位置添加 pink</span></span><br><span class="line"><span class="comment">//console.log(arr) // [&#x27;red&#x27;, &#x27;pink&#x27;, &#x27;green&#x27;, &#x27;blue&#x27;]</span></span><br><span class="line">arr.<span class="title function_">splice</span>(<span class="number">1</span>, <span class="number">0</span>, <span class="string">&#x27;pink&#x27;</span>, <span class="string">&#x27;hotpink&#x27;</span>) <span class="comment">// 在索引号是1的位置添加 pink  hotpink</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(arr) <span class="comment">// [&#x27;red&#x27;, &#x27;pink&#x27;, &#x27;hotpink&#x27;, &#x27;green&#x27;, &#x27;blue&#x27;]</span></span><br></pre></td></tr></table></figure>
+<h1 id="web-apis---第1天笔记">Web APIs - 第1天笔记</h1>
 <blockquote>
 <p>了解 DOM 的结构并掌握其基本的操作，体验 DOM 的在开发中的作用</p>
 </blockquote>
@@ -1105,7 +1119,7 @@ ECMAScript 规定的。浏览器将 ECMAScript
 大部分的规范加以实现，并且在此基础上又扩展一些实用的功能，这些被扩展出来的内容我们称为
 Web APIs。</p>
 <figure>
-<img src="/2024/08/04/Web-APIs%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B01/guide-1722785764580-2.png" alt="guide">
+<img src="/2024/08/04/Web-APIs%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E4%B8%80/guide.png" alt="guide">
 <figcaption aria-hidden="true">guide</figcaption>
 </figure>
 <p>ECMAScript 运行在浏览器中然后再结合 Web APIs 才是真正的
@@ -1127,7 +1141,7 @@ HTML 的动态更新，为实现网页特效以及用户交互提供技术支撑
 的，其目的是开发网页特效及用户交互。</p>
 <p>观察一个小例子：</p>
 <figure>
-<img src="/2024/08/04/Web-APIs%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B01/demo.gif" alt="demo">
+<img src="/2024/08/04/Web-APIs%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E4%B8%80/demo.gif" alt="demo">
 <figcaption aria-hidden="true">demo</figcaption>
 </figure>
 <p>上述的例子中当用户分分别点击【开始】或【结束】按钮后，通过右侧调试窗口可以观察到
@@ -1138,8 +1152,8 @@ html 标签的内容在不断的发生改变，这便是通过 DOM 实现的。<
 <p>如下图所示，将 HTML 文档以树状结构直观的表现出来，我们称之为文档树或
 DOM 树，<strong>文档树直观的体现了标签与标签之间的关系。</strong></p>
 <figure>
-<img src="/2024/08/04/Web-APIs%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B01/web-api.jpg" alt="dom">
-<figcaption aria-hidden="true">dom</figcaption>
+<img src="/2024/08/04/Web-APIs%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E4%B8%80/web-api.jpg" alt="图片">
+<figcaption aria-hidden="true">图片</figcaption>
 </figure>
 <h4 id="dom-节点">DOM 节点</h4>
 <p>节点是文档树的组成部分，<strong>每一个节点都是一个 DOM
@@ -1194,7 +1208,7 @@ DOM 树，<strong>文档树直观的体现了标签与标签之间的关系。</
 <figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">  <span class="comment">// innerHTML 将文本内容添加/更新到任意标签位置</span></span></span><br><span class="line"><span class="language-javascript">  <span class="keyword">const</span> intro = <span class="variable language_">document</span>.<span class="title function_">querySelector</span>(<span class="string">&#x27;.intro&#x27;</span>)</span></span><br><span class="line"><span class="language-javascript">  intro.<span class="property">innerHTML</span> = <span class="string">&#x27;嗨~ 我叫韩梅梅！&#x27;</span></span></span><br><span class="line"><span class="language-javascript">  intro.<span class="property">innerHTML</span> = <span class="string">&#x27;&lt;h4&gt;嗨~ 我叫韩梅梅！&lt;/h4&gt;&#x27;</span></span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
 <p>总结：如果文本内容中包含 <code>html</code> 标签时推荐使用
 <code>innerHTML</code>，否则建议使用 <code>innerText</code> 属性。</p>
-<p>##操作元素属性</p>
+<h2 id="操作元素属性">操作元素属性</h2>
 <p>有3种方式可以实现对属性的修改：</p>
 <h4 id="常用属性修改">常用属性修改</h4>
 <ol type="1">
@@ -1301,20 +1315,6 @@ DOM 树，<strong>文档树直观的体现了标签与标签之间的关系。</
 </tr>
 </tbody>
 </table>
-<p>复习：</p>
-<p>splice() 方法用于添加或删除数组中的元素。</p>
-<p><strong>注意：</strong>这种方法会改变原始数组。</p>
-<ol type="1">
-<li><strong>删除数组：</strong></li>
-</ol>
-<p>splice(起始位置， 删除的个数)</p>
-<p>比如：1</p>
-<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">let</span> arr = [<span class="string">&#x27;red&#x27;</span>, <span class="string">&#x27;green&#x27;</span>, <span class="string">&#x27;blue&#x27;</span>]</span><br><span class="line">arr.<span class="title function_">splice</span>(<span class="number">1</span>,<span class="number">1</span>) <span class="comment">// 删除green元素</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(arr) <span class="comment">// [&#x27;red, &#x27;blue&#x27;]</span></span><br></pre></td></tr></table></figure>
-<ol start="2" type="1">
-<li><strong>添加元素</strong></li>
-</ol>
-<p>splice(起始位置，删除个数，添加数组元素)</p>
-<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">let</span> arr = [<span class="string">&#x27;red&#x27;</span>, <span class="string">&#x27;green&#x27;</span>, <span class="string">&#x27;blue&#x27;</span>]</span><br><span class="line"><span class="comment">//arr.splice(1, 0, &#x27;pink&#x27;) // 在索引号是1的位置添加 pink</span></span><br><span class="line"><span class="comment">//console.log(arr) // [&#x27;red&#x27;, &#x27;pink&#x27;, &#x27;green&#x27;, &#x27;blue&#x27;]</span></span><br><span class="line">arr.<span class="title function_">splice</span>(<span class="number">1</span>, <span class="number">0</span>, <span class="string">&#x27;pink&#x27;</span>, <span class="string">&#x27;hotpink&#x27;</span>) <span class="comment">// 在索引号是1的位置添加 pink  hotpink</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(arr) <span class="comment">// [&#x27;red&#x27;, &#x27;pink&#x27;, &#x27;hotpink&#x27;, &#x27;green&#x27;, &#x27;blue&#x27;]</span></span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
         <category>Web-APIs</category>
