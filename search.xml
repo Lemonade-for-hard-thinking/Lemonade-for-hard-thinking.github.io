@@ -2111,6 +2111,7 @@ HTML 代码，开始添加表格 <code>&lt;table&gt;</code>
 <p><strong>2、</strong>浴帘老师要求如果正则表达式得名字后面有数字的话，就把这个数字当成类似实验一中得<code>TokenID</code>，所以预处理里面我也处理了一下，但是我在整个实验中实在是没有用到这个东西，问了问其他同学，其他同学也不是很明白老师的意思，那就这样吧。</p>
 <p><strong>3、</strong>通过使用多个<code>Graph</code>类的对象，我们可以一次处理多个正则表达式，但是这个时候程序可能需要稍等一秒钟才可以输出结果。</p>
 <p><strong>4、</strong>NFA转的DFA的输出是输出的点对应的状态集合？（代码中输出的是DFA中的点，如果想要输出DFA中点对应的NFA的点的集合的话，就在Display()函数中特殊处理一下choice==2的情况）。</p>
+<p><strong>5、</strong>当DFA或者最小化DFA的初始状态和终态重叠的时候，输出的状态转换表格是只有浅蓝色的。</p>
 ]]></content>
       <categories>
         <category>编译原理</category>
