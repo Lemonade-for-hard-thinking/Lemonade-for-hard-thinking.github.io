@@ -2118,6 +2118,120 @@ HTML 代码，开始添加表格 <code>&lt;table&gt;</code>
       </categories>
   </entry>
   <entry>
+    <title>测试后量子算法标准</title>
+    <url>/2024/10/23/%E6%B5%8B%E8%AF%95%E5%90%8E%E9%87%8F%E5%AD%90%E7%AE%97%E6%B3%95%E6%A0%87%E5%87%86/</url>
+    <content><![CDATA[<p>x111111ubuntu24</p>
+<h2 id="安装所需的软件包">1. 安装所需的软件包</h2>
+<p>首先，确保系统已经安装了OpenSSL
+3.0及其相关依赖。你可以使用以下命令来安装OpenSSL
+3.0和构建所需的开发环境：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt update</span><br><span class="line"><span class="built_in">sudo</span> apt install build-essential libssl-dev</span><br></pre></td></tr></table></figure>
+<h2 id="安装open-quantum-safe-oqs-provider">2. 安装Open Quantum Safe
+(OQS) Provider</h2>
+<p>使用OQS提供的后量子安全库兼容OpenSSL 3.0。首先克隆OQS的代码库：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/open-quantum-safe/oqs-provider.git</span><br></pre></td></tr></table></figure>
+<p>然后编译并安装OQS Provider：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> oqs-provider</span><br><span class="line"><span class="built_in">mkdir</span> build &amp;&amp; <span class="built_in">cd</span> build</span><br><span class="line">cmake ..</span><br><span class="line">make</span><br><span class="line"><span class="built_in">sudo</span> make install</span><br></pre></td></tr></table></figure>
+<p>在执行上面的<code>cmake ..</code>的时候有可能会报下面的错：</p>
+<figure>
+<img src="https://s2.loli.net/2024/10/23/S3anKb8N2Em9JYu.png"
+alt="27ac8f6dece47e64374cb441c20a72f.png" />
+<figcaption
+aria-hidden="true">27ac8f6dece47e64374cb441c20a72f.png</figcaption>
+</figure>
+<p>根据提供的错误信息，这是由于缺少 <code>liboqs</code> 库导致的
+<code>CMake</code> 配置问题。问题的核心是 <code>liboqs</code>
+库没有正确安装，或者CMake找不到该库的安装路径。接下来我们就先解决这个问题，如果没有报错，就可以跳过解决步骤。</p>
+<h2 id="解决步骤">解决步骤：</h2>
+<ol type="1">
+<li><p><strong>安装 <code>liboqs</code> 库</strong></p>
+<p>首先，你需要确保已经安装了 <code>liboqs</code>
+库。可以使用以下步骤来安装它，输入命令之前记得先<code>cd</code>到<code>~</code>目录：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">clone</span> --branch main https://github.com/open-quantum-safe/liboqs.git</span><br><span class="line"><span class="built_in">cd</span> liboqs</span><br><span class="line"><span class="built_in">mkdir</span> build &amp;&amp; <span class="built_in">cd</span> build</span><br><span class="line">cmake ..</span><br><span class="line">make -j</span><br><span class="line"><span class="built_in">sudo</span> make install</span><br></pre></td></tr></table></figure>
+<p>上面的<code>make -j</code>是并行编译，如果你的虚拟机内存不是很大的话就换成<code>make</code>,不然又虚拟机可能会重启，重启之后。</p></li>
+<li><p><strong>设置 <code>liboqs</code> 库的路径</strong></p>
+<p>安装 <code>liboqs</code>
+库之后，你可能需要指定CMake找到该库的路径。你可以通过设置环境变量来指向
+<code>liboqs</code> 的安装路径。</p>
+<p>在运行CMake之前，添加以下内容：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">export</span> liboqs_DIR=/usr/local/lib/cmake/oqs</span><br></pre></td></tr></table></figure></li>
+<li><p><strong>验证库是否安装成功</strong></p>
+<p>如果问题依然存在，确认一下 <code>liboqs</code>
+库是否正确安装，可以通过以下方式检查：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">ls</span> /usr/local/lib/cmake/oqs</span><br></pre></td></tr></table></figure>
+<p>如果目录中包含 <code>liboqsConfig.cmake</code>
+文件，说明安装是成功的。</p>
+<p>检查 <code>liboqs.a</code> 是否已成功安装：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">ls</span> /usr/local/lib | grep oqs</span><br></pre></td></tr></table></figure>
+<p>你应该看到 <code>liboqs.a</code> 或 <code>liboqs.so</code> 文件，表示
+<code>liboqs</code>
+库已成功安装。然后重新运行CMake命令，然后接着编译安装<code>oqs-provider</code>：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~/oqs-provider/build</span><br><span class="line">cmake ..</span><br><span class="line">make</span><br><span class="line"><span class="built_in">sudo</span> make install</span><br></pre></td></tr></table></figure>
+<p>这个时候我们应该是可以正常安装的，但是我们执行完<code>sudo make install</code>之后要记住<code>oqsprovider.so</code>文件的路径，如下图所示，后面我们要用：</p>
+<figure>
+<img src="https://s2.loli.net/2024/10/23/uBxagZkIh6tQMwO.png"
+alt="8a76bf47cc7adece15ea247be52d079.png" />
+<figcaption
+aria-hidden="true">8a76bf47cc7adece15ea247be52d079.png</figcaption>
+</figure>
+<h2 id="配置openssl使用oqs-provider">3. 配置OpenSSL使用OQS Provider</h2>
+<p>确保你的OpenSSL已经正确链接到OQS
+Provider。你需要编辑OpenSSL的配置文件，将其指向刚刚编译的OQS
+Provider模块。</p>
+<p>编辑OpenSSL的<code>openssl.cnf</code>文件，这个配置文件的路径是在<code>/etc/ssl/</code>里面，打开文件，添加以下内容（标注添加的才是需要添加上去的，标注原有的是文件本来就有的，添加的位置就在文件稍微下滑一点）：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">openssl_conf = openssl_init  <span class="comment">#文件原有，不要动</span></span><br><span class="line"></span><br><span class="line">[openssl_init]  <span class="comment">#文件原有，不要动</span></span><br><span class="line">providers = provider_sect  <span class="comment">#文件原有，不要动</span></span><br><span class="line"></span><br><span class="line">[provider_sect]  <span class="comment">#文件原有，不要动</span></span><br><span class="line">default = default_sect  <span class="comment">#文件原有，不要动</span></span><br><span class="line">oqsprovider = oqsprovider_sect  <span class="comment">#添加</span></span><br><span class="line"></span><br><span class="line">[default_sect]   <span class="comment">#文件原有，不要动</span></span><br><span class="line">activate = 1 <span class="comment">#文件原有，不要动</span></span><br><span class="line"></span><br><span class="line">[oqsprovider_sect]  <span class="comment">#添加</span></span><br><span class="line">activate = 1  <span class="comment">#添加</span></span><br><span class="line">module = /usr/local/lib/ossl-modules/oqsprovider.so  <span class="comment">#添加</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>添加完成之后，保存并退出文件编辑器。</p>
+<p>输入的命令中最后一条<code>module = /usr/local/lib/ossl-modules/oqsprovider.so</code>,这个文件就是在第二步的最后我们要记住路径的文件，为了下一步我们可以在<code>openssl</code>中成功重新加载<code>oqsprovider</code>，我们需要把文件复制到这个<code>/usr/local/lib/ossl-modules/oqsprovider.so</code>路径下面，这个路径下面我们是没有办法直接操作的（没有权限），我们先点击进去<code>/usr/local/lib</code>看看有没有<code>ossl-modules</code>文件夹，如果没有，我们先执行命令创建：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> <span class="built_in">mkdir</span> -p /usr/local/lib/ossl-modules</span><br></pre></td></tr></table></figure>
+<p>然后我们执行下面的命令开始将<code>oqsprovider.so</code>文件复制到这个文件夹里面，注意第一个路径就是之前要记住的路径，下面的命令是以上面的图片里面的路径为例：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> <span class="built_in">mv</span>  /usr/local/lib64/ossl-modules/oqsprovider.so /usr/local/lib/ossl-modules/</span><br></pre></td></tr></table></figure>
+<h2 id="检查-openssl-是否加载了-oqs-provider">4. 检查 OpenSSL 是否加载了
+OQS Provider</h2>
+<p>1、<strong>重新加载 OpenSSL</strong></p>
+<p>然后通过以下命令手动重新加载配置文件来重新加载 OpenSSL：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">export</span> OPENSSL_CONF=/etc/ssl/openssl.cnf</span><br></pre></td></tr></table></figure>
+<p>或者可以尝试重新启动你的 Ubuntu 服务器：</p>
+<p>2、通过以下命令来检查 OpenSSL 是否正确加载了
+<code>oqsprovider</code>：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">openssl list -providers</span><br></pre></td></tr></table></figure>
+<p>如果执行完这条命令输出像下图一样，显示
+<code>oqsprovider</code>，表示已经成功加载。如果没有显示，表示 OQS
+Provider 还没有被正确加载，可能需要重新安装或配置。</p>
+<figure>
+<img src="https://s2.loli.net/2024/10/23/YC6BdW9mjzA32Vr.png"
+alt="41825f5f62eba00b9bb78ab6856017c.png" />
+<figcaption
+aria-hidden="true">41825f5f62eba00b9bb78ab6856017c.png</figcaption>
+</figure>
+<h2 id="测试">5、测试</h2>
+<p>接下来，可以测试不同算法的性能。你可以使用以下命令测试CRYSTALS-Kyber和Sphinx与RSA和ECDSA的对比：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 测试RSA</span></span><br><span class="line">openssl speed rsa</span><br><span class="line"><span class="comment"># 测试ECDSA</span></span><br><span class="line">openssl speed ecdsa</span><br><span class="line"><span class="comment"># 测试CRYSTALS-Kyber</span></span><br><span class="line">openssl speed oqs_kem_kyber512</span><br><span class="line"><span class="comment"># 测试Sphinx</span></span><br><span class="line">openssl speed oqs_sig_sphincs_sha256_128f_robust</span><br></pre></td></tr></table></figure>
+<p>前两条命令的测试应该不会有什么问题，慢慢等他测试完会输出测试的结果。后两条测试后量子算法的命令有可能会提示下面</p>
+<figure>
+<img src="https://s2.loli.net/2024/10/23/m1PfTERYbNriQDu.png"
+alt="8998a587a98d7527716bfd2f2f10ffb.png" />
+<figcaption
+aria-hidden="true">8998a587a98d7527716bfd2f2f10ffb.png</figcaption>
+</figure>
+<p>这个我搜到的方法（我也不知道对不对）是使用<code>test_kem</code>
+工具测试Kyber512，使用<code>test_sig</code>测试第二个，我们首先进入下面的路径：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> liboqs</span><br><span class="line"><span class="built_in">cd</span> build</span><br><span class="line"><span class="built_in">cd</span> tests</span><br><span class="line">./test_kem</span><br></pre></td></tr></table></figure>
+<p>然后在输出的一大堆名字中找出我们要测试的算法，然后单独测试我们的算法，输入以下代码：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">./test_kem Kyber512</span><br></pre></td></tr></table></figure>
+<figure>
+<img src="https://s2.loli.net/2024/10/23/lak4zZ6gW5wuBTD.png"
+alt="7dae5f2331e6d91d4b9d72c9ce49bb1.png" />
+<figcaption
+aria-hidden="true">7dae5f2331e6d91d4b9d72c9ce49bb1.png</figcaption>
+</figure>
+<p>第二个算法是在<code>test_sig</code>里面。</p>
+]]></content>
+      <categories>
+        <category>网络安全</category>
+      </categories>
+  </entry>
+  <entry>
     <title>文章分类</title>
     <url>/categories/index.html</url>
     <content><![CDATA[
