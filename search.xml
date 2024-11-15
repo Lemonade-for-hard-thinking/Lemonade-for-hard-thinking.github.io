@@ -2279,6 +2279,298 @@ aria-hidden="true">7dae5f2331e6d91d4b9d72c9ce49bb1.png</figcaption>
       </categories>
   </entry>
   <entry>
+    <title>网络安全课程作业</title>
+    <url>/2024/11/15/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E8%AF%BE%E7%A8%8B%E4%BD%9C%E4%B8%9A/</url>
+    <content><![CDATA[<h3
+id="基于ssl-cert和nginx将web网站基于webgoat或dvwa后面web安全也会用到这个全站升级为https访问">1、基于<code>SSL Cert</code>和<code>Nginx</code>，将<code>web</code>网站(基于<code>webgoa</code>t或<code>dvwa</code>，后面<code>web</code>安全也会用到这个)，全站升级为<code>https</code>访问</h3>
+<ul>
+<li><p><code>webgoat:https://github.com/WebGoat/WebGoat</code></p></li>
+<li><p><code>dvwa:https://github.com/digininia/DVWA</code></p></li>
+</ul>
+<p>​
+<strong>解：</strong>因为我们的实验需要基于<code>Nginx</code>，所以我们先在虚拟机中配置<code>Nginx</code>，配置的命令和过程如下：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt update <span class="comment">#更新系统软件包</span></span><br><span class="line"><span class="built_in">sudo</span> apt install nginx -y <span class="comment">#安装Nginx</span></span><br><span class="line"><span class="built_in">sudo</span> systemctl start nginx <span class="comment">#启动Nginx服务</span></span><br><span class="line"><span class="built_in">sudo</span> systemctl <span class="built_in">enable</span> nginx <span class="comment">#设置Nginx开机启动</span></span><br></pre></td></tr></table></figure>
+<p>​ 然后我们需要生成自签名证书，命令如下：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> <span class="built_in">mkdir</span> /etc/nginx/ssl</span><br><span class="line"><span class="built_in">sudo</span> openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/ssl/nginx.key -out /etc/nginx/ssl/nginx.crt</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>​
+输入完命令之后，可能会提示我们要输入国家，城市以及组织等信息，我们随意填写即可。</p>
+<p>​
+在实验中我们使用的网站是基于<code>WebGoat</code>的，因为感觉<code>DVWA</code>的配置过程有点复杂。在修改<code>Nginx</code>的配置之前，我们先配置一下<code>WebGoat</code>，我们克隆的命令如下：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/WebGoat/WebGoat.git</span><br></pre></td></tr></table></figure>
+<p>​
+<code>WebGoat</code>可以作为独立的<code>Java</code>应用程序运行，所以我们需要<code>Java</code>环境：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt install default-jdk -y</span><br></pre></td></tr></table></figure>
+<p>​ 进入下载的<code>WebGoat</code>目录并运行：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> WebGoat</span><br><span class="line">./mvnw clean install</span><br><span class="line">java -jar target/webgoat-2024.2-SNAPSHOT.jar</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>​
+如果正常的话，我们就已经成功运行<code>WebGoat</code>了。但是有时候如果在运行
+<code>./mvnw</code>
+时有网络问题可能会导致我们依赖下载失败。有时候也可能因为<code>Maven</code>的版本问题导致下载依赖失败，此时我们可以尝试安装系统中的<code>Maven</code>来取代<code>Wrapper</code>，安装<code>Maven</code>以及重新下载依赖的命令如下：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt install maven -y</span><br><span class="line">mvn clean install</span><br></pre></td></tr></table></figure>
+<p>​
+使用<code>mvn clean install</code>命令之后，我们依然还会遇到问题，如在下面的截图中我们构建失败了，这是由于测试阶段有一个失败的单元测试，导致整个
+Maven
+构建失败。这通常是因为项目在编译或测试阶段出现了无法通过的测试。错误部分是
+<code>Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.1:test</code>，这表明在测试执行时某些测试用例没有通过。</p>
+<figure>
+<img src="https://s2.loli.net/2024/11/06/UthHq2RCQNlsIcX.png"
+alt="1.png" />
+<figcaption aria-hidden="true">1.png</figcaption>
+</figure>
+<p>​ 因为在实验中我们只是想要运行
+<code>WebGoat</code>，而不是深入调试测试用例的问题，可以在构建的时候跳过测试阶段。这样做可以忽略单元测试的失败，顺利构建项目。在构建的时候跳过测试的命令如下：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mvn clean install -DskipTests</span><br></pre></td></tr></table></figure>
+<p>​ 当我们看到下面的结果时，就表示我们已经构建成功了：</p>
+<figure>
+<img src="https://s2.loli.net/2024/11/07/VJ4Kyke3OZbuoWI.png"
+alt="image.png" />
+<figcaption aria-hidden="true">image.png</figcaption>
+</figure>
+<p>​ 之后我们在输入下面的命令运行<code>WebGoat</code>:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">java -jar target/webgoat-2024.2-SNAPSHOT.jar</span><br></pre></td></tr></table></figure>
+<p>​
+但我们看到命令行输出如下图所示的提示的时候，就表示我们的<code>Webgoat</code>成功的运行在<code>8080</code>端口了：</p>
+<figure>
+<img src="https://s2.loli.net/2024/11/07/4fcxWelHOI7biAs.png"
+alt="8.png" />
+<figcaption aria-hidden="true"><em>8</em>.png</figcaption>
+</figure>
+<p>​
+此时我们可以通过在浏览器中输入<code>http://localhost:8080/WebGoat</code>来访问网页，如下图所示：</p>
+<figure>
+<img src="https://s2.loli.net/2024/11/07/U7fDSWmtw23q5Yj.png"
+alt="http.png" />
+<figcaption aria-hidden="true">http.png</figcaption>
+</figure>
+<p>​
+我们成功配置<code>WebGoat</code>网页之后，为了将<code>Web</code>网站全站升级为<code>https</code>访问，我们需要修改一下<code>Nginx</code>的配置文件<code>/etc/nginx/sites-available/default</code>，我们将配置修改为如下所示：</p>
+<figure class="highlight nginx"><table><tr><td class="code"><pre><span class="line"><span class="section">server</span> &#123;</span><br><span class="line">    <span class="attribute">listen</span> <span class="number">80</span> default_server;</span><br><span class="line">    <span class="attribute">listen</span> [::]:<span class="number">80</span> default_server;</span><br><span class="line"></span><br><span class="line">    <span class="attribute">server_name</span> localhost;</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 所有 HTTP 请求重定向到 HTTPS</span></span><br><span class="line">    <span class="attribute">return</span> <span class="number">301</span> https://<span class="variable">$host</span><span class="variable">$request_uri</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="section">server</span> &#123;</span><br><span class="line">    <span class="attribute">listen</span> <span class="number">443</span> ssl default_server;</span><br><span class="line">    <span class="attribute">listen</span> [::]:<span class="number">443</span> ssl default_server;</span><br><span class="line">    </span><br><span class="line">    <span class="attribute">server_name</span> localhost;</span><br><span class="line"></span><br><span class="line">    <span class="comment"># SSL 证书配置</span></span><br><span class="line">    <span class="attribute">ssl_certificate</span> /etc/nginx/ssl/nginx.crt;</span><br><span class="line">    <span class="attribute">ssl_certificate_key</span> /etc/nginx/ssl/nginx.key;</span><br><span class="line"></span><br><span class="line">    <span class="comment"># SSL 加密协议和参数设置</span></span><br><span class="line">    <span class="attribute">ssl_protocols</span> TLSv1.<span class="number">2</span> TLSv1.<span class="number">3</span>;</span><br><span class="line">    <span class="attribute">ssl_prefer_server_ciphers</span> <span class="literal">on</span>;</span><br><span class="line">    <span class="attribute">ssl_ciphers</span> HIGH:!aNULL:!MD5;</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 针对 WebGoat 的反向代理配置</span></span><br><span class="line">    <span class="section">location</span> /WebGoat &#123;</span><br><span class="line">        <span class="attribute">proxy_pass</span> http://localhost:8080/WebGoat;  <span class="comment"># 注意大小写</span></span><br><span class="line">        <span class="attribute">proxy_set_header</span> Host <span class="variable">$host</span>;</span><br><span class="line">        <span class="attribute">proxy_set_header</span> X-Real-IP <span class="variable">$remote_addr</span>;</span><br><span class="line">        <span class="attribute">proxy_set_header</span> X-Forwarded-For <span class="variable">$proxy_add_x_forwarded_for</span>;</span><br><span class="line">        <span class="attribute">proxy_set_header</span> X-Forwarded-Proto <span class="variable">$scheme</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;	</span><br></pre></td></tr></table></figure>
+<p>​ 在第一个<code>server</code>块中，我们将所有的 <code>HTTP</code>
+请求通过 <code>Nginx</code> 重定向到
+<code>HTTPS</code>，以确保访问应用时强制使用加密连接。在第二个<code>server</code>块中，我们监听<code>443</code>端口，我们也在里面配置了<code>SSL</code>
+证书，使得 <code>Nginx</code>
+能够支持<code>HTTPS</code>访问。修改完配置文件之后，我们需要测试<code>Nginx</code>配置以及需要将<code>Nginx</code>重启以应用更改。</p>
+<p>​ 测试<code>Nginx</code>配置是否有错误的命令如下：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nginx -t</span><br></pre></td></tr></table></figure>
+<p>​ 测试成功的提示如下所示：</p>
+<figure>
+<img src="https://s2.loli.net/2024/11/07/l1ZsA3HYP2tDCpO.png"
+alt="9.png" />
+<figcaption aria-hidden="true"><em>9</em>.png</figcaption>
+</figure>
+<p>​ 然后我们输入命令重启<code>Nginx</code>以应用更改：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> systemctl restart nginx</span><br></pre></td></tr></table></figure>
+<p>​
+我们配置完<code>Nginx</code>之后，我们就成功的将<code>http</code>网站升级为<code>https</code>访问了，如下面是我们在运行<code>WebGaot</code>之后访问网站<code>https://localhost/WebGoat</code>的结果：</p>
+<figure>
+<img src="https://s2.loli.net/2024/11/07/AyKqXWwEJTiCvSd.png"
+alt="https.png" />
+<figcaption aria-hidden="true">https.png</figcaption>
+</figure>
+<p>​ <strong>实验总结：</strong>在第一个实验中，我们成功使用
+<code>Nginx</code> 和自签名 SSL 证书为 <code>WebGoat</code> 网站启用了
+<code>HTTPS</code>。首先，通过安装和配置
+<code>Nginx</code>，我们为网站设置了基于 <code>HTTPS</code>
+的加密通信。在此过程中，我们生成了自签名证书，并修改了
+<code>Nginx</code> 配置文件，使得所有 HTTP 请求自动重定向到
+<code>HTTPS</code>。最后，测试了访问 <code>WebGoat</code>
+网站，确认所有数据传输均使用加密连接。</p>
+<hr />
+<h3
+id="使用wireshark抓包分析上述web网站在http改造为https之后的区别">2、使用<code>Wireshark</code>抓包，分析上述<code>Web</code>网站在<code>http</code>改造为<code>https</code>之后的区别</h3>
+<ul>
+<li>对<code>SSL</code>协议进行分析</li>
+</ul>
+<p>​ 由于我的虚拟机的网卡使用是<code>NAT</code>模式，在 <code>NAT</code>
+模式下，虚拟机的所有流量实际上会经过主机的网络接口，但由于
+<code>NAT</code> 转换的存在，主机上直接运行的 <code>Wireshark</code>
+可能看不到原始虚拟机的流量，或看到的流量是经过转换后的主机
+<code>IP</code>信息。所以我们在虚拟机内部直接使用<code>Wireshark</code>进行对本地环回接口<code>Loopback</code>的流量进行抓包，因为我们访问的就是
+<code>http://localhost:8080/WebGoat</code>或者<code>https://localhost/WebGoat</code>，也就是本地回环地址
+(<code>127.0.0.1</code>)。这样的请求流量是在回环接口上进行的，而不是通过物理网络接口传输，而<code>Loopback</code>
+是处理所有本地回环流量的接口（即 <code>localhost</code> 或
+<code>127.0.0.1</code> 的所有请求）</p>
+<p>​
+我们先访问一下<code>http://localhost:8080/WebGoat</code>网址并输入用户名和密码进行登录操作，并抓取一下流量。为了后续的分析，我们抓取完流量之后需要保存，抓包的部分结果如图所示：</p>
+<figure>
+<img src="https://s2.loli.net/2024/11/07/jUzlnxATRK9McEp.png"
+alt="http2.png" />
+<figcaption aria-hidden="true">http2.png</figcaption>
+</figure>
+<p>​
+我们再次访问一下<code>https://localhost/WebGoat</code>网址并输入用户名和密码进行登录操作，并抓取一下流量。抓取完成之后我们同样需要保存。抓包的部分结果如图所示：</p>
+<figure>
+<img src="https://s2.loli.net/2024/11/07/P78XRrpFDMWkgcv.png"
+alt="https2.png" />
+<figcaption aria-hidden="true">https2.png</figcaption>
+</figure>
+<p>​ 之后我们对于抓取到的流量进行详细分析，我们从多个方面分析：</p>
+<p><strong>数据传输的明文与加密</strong>：</p>
+<ul>
+<li><p><code>HTTP</code></p>
+<p>登录时的 POST
+请求内容是明文传输的，我们可以在数据包中直接看到用户名和密码。所以任何人在同一个网络中拦截到这些数据包，都可以轻易地获得登录信息。</p>
+<p>在<code>Wireshark</code>中我们使用<code>http.request.method == "POST"</code>可以过滤得到包含用户名和密码的请求，我们查看报文的内容可以发现用户名和密码均是明文传输的，报文中结果如下图，图中我们可以直接看到用户名和密码。</p>
+<figure>
+<img src="https://s2.loli.net/2024/11/07/UFQRJqA678akfyg.png"
+alt="image.png" />
+<figcaption aria-hidden="true">image.png</figcaption>
+</figure></li>
+<li><p><code>HTTPS</code></p>
+<p><code>HTTPS</code> 使用
+<code>TLS</code>（传输层安全协议）加密所有通信内容，包括用户名、密码等敏感数据。抓包时，我们会发现登录请求的实际内容部分是无法读取的（加密），只能看到一些握手和加密过程的信息。在这种情况下，即使攻击者拦截了数据包，内容也是加密的，无法直接获得登录信息，这大大提高了信息的安全性。</p></li>
+</ul>
+<p><strong>握手过程</strong>：</p>
+<ul>
+<li><p><code>HTTPS</code></p>
+<p>​ 使用 <code>TLS</code> 来保证传输的安全性，因此在 <code>HTTPS</code>
+流量中，我们会看到一系列的握手数据包，例如
+<code>Client Hello</code>、<code>Server Hello</code>
+等。握手过程中会协商加密算法、交换密钥以确保后续通信是加密的。在<code>Client Hello</code>
+或 <code>Server Hello</code> 的数据包中，我们可以看到 <code>SSL</code>
+握手过程的信息，包括加密协议、证书信息等。</p>
+<p>​
+如在下图中，我们使用<code>tls</code>过滤器过滤之后可以看到许多握手报文：</p>
+<figure>
+<img src="https://s2.loli.net/2024/11/07/i3zyRcxpbaA2vKh.png"
+alt="image.png" />
+<figcaption aria-hidden="true">image.png</figcaption>
+</figure></li>
+<li><p><code>HTTP</code></p>
+<p>而
+<code>HTTP</code>则没有这种握手过程，所有请求和响应均直接以明文形式传输。</p></li>
+</ul>
+<p><strong>抓包结果总结</strong></p>
+<ul>
+<li><p><code>HTTP</code> 流量的风险</p>
+<p>​ <code>HTTP</code>
+的数据传输是不安全的，所有内容都是明文。任何截获到这些数据包的攻击者都能看到其中包含的敏感信息（例如用户名和密码）。这使得
+<code>HTTP</code>
+的登录信息很容易被中间人攻击截获，存在重大安全风险。</p></li>
+<li><p><code>HTTPS</code> 提供的安全性</p>
+<p>​ <code>HTTPS</code> 通过加密来保证数据在传输过程中的安全性。在
+<code>Wireshark</code>
+中抓取到的数据包中，所有敏感数据均已加密，无法直接读取到明文信息。通过
+<code>SSL/TLS</code> 握手，<code>HTTPS</code>
+使得攻击者即使拦截了数据包，也无法轻易破解数据内容。</p></li>
+</ul>
+<p><strong>对SSL协议的分析</strong></p>
+<ul>
+<li><p><code>SSL/TLS</code> 握手过程</p>
+<p>在 <code>HTTPS</code> 抓包中，你可以看到 <code>Client Hello</code> 和
+<code>Server Hello</code>
+包，这些数据包用于协商安全加密算法和会话密钥。</p>
+<p>如下图是我们分别打开一个<code>Client Hello</code> 和
+<code>Server Hello</code>报文，我们查看报文的<code>Transport Layer Security</code>
+部分：</p>
+<figure>
+<p><img src="https://s2.loli.net/2024/11/07/aseS6MJwutXYrh7.png" width="460">
+<img src="https://s2.loli.net/2024/11/07/Q5MeY6BOqFGWjDl.png" width="460"></p>
+</figure></li>
+</ul>
+<p>​ 从报文中我们可以看出<code>Client Hello</code>是 <code>TLS</code>
+握手的第一个步骤，客户端通过这个消息告诉服务器它支持的各种加密参数，并尝试协商一个共同支持的加密方式，<code>Server Hello</code>
+是服务器对客户端的 <code>Client Hello</code>
+的回应，用于通知客户端将要使用的协议版本、加密套件以及相关的参数。</p>
+<p>​ <strong>实验总结：</strong>在抓包分析实验中，我们通过
+<code>Wireshark</code> 对比了 <code>HTTP</code> 和 <code>HTTPS</code>
+网站在传输过程中数据的不同。首先，使用 <code>HTTP</code>
+访问网站时，所有数据，包括用户名和密码，均为明文传输，容易被攻击者窃取。相反，使用
+<code>HTTPS</code>
+后，数据被加密传输，即便数据包被拦截，攻击者也无法读取其中的敏感信息，此外，我们还分析了
+<code>HTTPS</code> 流量中的 SSL/TLS 握手过程，了解了如何通过
+<code>Client Hello</code> 和 <code>Server Hello</code>
+协议进行加密算法和密钥的协商。通过此次实验，我深刻理解了
+<code>HTTP</code> 与 <code>HTTPS</code>
+在安全性方面的差异，特别是加密通信如何有效保护数据隐私，防止中间人攻击。</p>
+<hr />
+<h3
+id="利用aircrack-ng工具集进行wpa2破解">3、利用<code>aircrack-ng</code>工具集进行<code>WPA2</code>破解</h3>
+<ul>
+<li><code>http://www.jianshu.com/p/fd16236057df</code></li>
+</ul>
+<p>​
+<strong>解</strong>：我们首先先执行下面的命令安装<code>aircrack-ng</code>:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt update</span><br><span class="line"><span class="built_in">sudo</span> apt install aircrack-ng</span><br></pre></td></tr></table></figure>
+<p>​
+在实验中，我们的网卡需要处于监听模式，这样我们才可以捕获周围无线网络的流量，我的笔记本中的网卡是没有监听模式的，所以我重新买了一张外接网卡，将外接的网卡连接到虚拟机里面之后，我们先使用下面的命令查看可用的的网络接口：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">iwconfig</span><br></pre></td></tr></table></figure>
+<p>​ 我们可以看到下面几个网络接口：</p>
+<figure>
+<img src="https://s2.loli.net/2024/11/12/1WL2d7BuqmPa4EM.png"
+alt="4.1.png" />
+<figcaption aria-hidden="true">4.1.png</figcaption>
+</figure>
+<p>​
+我们需要使用的网络接口是<code>wlx7cdd907d2eec</code>(不知道为什么显示的是这么奇怪的名字，我用的网卡连接到<code>kail</code>虚拟机中的时候可以显示为<code>wlan0</code>)。然后在我们打开网卡的监听模式之前，我们先检查一下会不会有进程会影响我们的监听，如果有我们就毫不留情的杀死进程，使用下面的命令：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> airmon-ng check <span class="comment">#查看有无进程会影响</span></span><br><span class="line"><span class="built_in">sudo</span> airmon-ng check <span class="built_in">kill</span> <span class="comment">#杀死进程</span></span><br></pre></td></tr></table></figure>
+<p>​ 然后我们就可以进入网卡的的监听模式了，我们先打开网卡，命令如下：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> ifconfig wlx7cdd907d2eec up</span><br><span class="line"><span class="built_in">sudo</span> airmon-ng start wlx7cdd907d2eec</span><br></pre></td></tr></table></figure>
+<p>​ 此时我们可以看到类似下面的输出：</p>
+<figure>
+<img src="https://s2.loli.net/2024/11/12/4okCi6aPev89uqR.png"
+alt="4.2.png" />
+<figcaption aria-hidden="true">4.2.png</figcaption>
+</figure>
+<p>​
+我们可以看到监控模式的时候网卡的名字变成了<code>wlan0mon</code>，然后我们打开他的监听模式，我们使用下面的命令：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> ifconfig wlan0mon down</span><br><span class="line"><span class="built_in">sudo</span> iwconfig wlan0mon mode monitor</span><br><span class="line"><span class="built_in">sudo</span> ifconfig wlan0mon up</span><br></pre></td></tr></table></figure>
+<p>​
+在然后我们就可以开始扫描我们周围的<code>WiFi</code>信号了，我将自己的手机热点名字设置为<code>20222132039</code>（我的学号），将密码设置为<code>12345678</code>，然后我们输入下面的命令开始扫描：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> airodump-ng wlan0mon</span><br></pre></td></tr></table></figure>
+<p>​
+扫描的结果如下，其中名字为<code>20222132039</code>的网络信号是我们的热点：</p>
+<figure>
+<img src="https://s2.loli.net/2024/11/12/eyiuSKAtbGxDPWV.png"
+alt="d8ef4c398bda5695761dedc213a1adc.png" />
+<figcaption
+aria-hidden="true">d8ef4c398bda5695761dedc213a1adc.png</figcaption>
+</figure>
+<p>​
+根据我们扫描的信息，我们看到了我们要攻击的<code>mac</code>地址，我们输入下面的命令来捕获网络的握手包：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> airodump-ng --ivs --bssid FE:C1:E4:65:BB:E4 –w longas -c 6	 wlan0mon</span><br></pre></td></tr></table></figure>
+<p>​ 输入命令之后我们可以看到下面的实验现象：</p>
+<figure>
+<img src="https://s2.loli.net/2024/11/12/xELCbeO8BQlTgsj.png"
+alt="d6c52760255536a85167b615183dc1e.png" />
+<figcaption
+aria-hidden="true">d6c52760255536a85167b615183dc1e.png</figcaption>
+</figure>
+<p>​
+为了获得破解所需的<code>WPA2</code>握手验证的整个完整数据包，我们将会发送一种称之为<code>Deauth</code>的数据包来将已经连接至无线路由器的合法无线客户端强制断开，此时，客户端就会自动重新连接无线路由器，我们也就有机会捕获到包含<code>WPA2</code>握手验证的完整数据包了。我们另外打开一个命令行窗口，输入命令如下：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> aireplay-ng -0 2 –a FE:C1:E4:65:BB:E4 -c C2:D5:C9:3D:E4:54 wlan0mon</span><br></pre></td></tr></table></figure>
+<p>​
+当我们看到我们捕获握手包的窗口的右上角出现<code>WPA handshake</code>的时候就表示我们以及捕获成功了，如果攻击一次没有捕获成功我们可以多攻击几次，成功的截图如下：</p>
+<figure>
+<img src="https://s2.loli.net/2024/11/12/qd51xh4np2NWimk.png"
+alt="image.png" />
+<figcaption aria-hidden="true">image.png</figcaption>
+</figure>
+<p>​
+我们输入下面的命令对捕获到的文件进行破解，我这里破解的文件是<code>longas-06.ivs</code>，为了加快破解速度，我们直接将密码写在字典中，我们准备一个字典文件<code>20222132039.txt</code>并将密码<code>12345678</code>写到里面。</p>
+<p>​ 然后我么输入下面的命令进行破解：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> aircrack-ng -w 20222132039.txt longas-06.ivs</span><br></pre></td></tr></table></figure>
+<p>​
+由于字典不大并且其中包含密码，我们很快就破解成功了，实验现象如下图，我们可以看到破解出密码为<code>12345678</code>：</p>
+<figure>
+<img src="https://s2.loli.net/2024/11/12/zynXsPVfZELq7Cu.png"
+alt="image.png" />
+<figcaption aria-hidden="true">image.png</figcaption>
+</figure>
+<p>​ <strong>实验总结：</strong>在第三个实验中，我们利用
+<code>aircrack-ng</code> 工具集对 <code>WPA2</code>
+加密进行破解。在实验过程中，首先通过将无线网卡设置为监听模式，捕获了周围的
+<code>WiFi</code> 信号，并成功发现了目标网络。随后，我们利用
+<code>deauth</code>
+攻击迫使已连接的客户端断开连接，并重新连接，从而捕获了包含
+<code>WPA2</code>
+握手信息的数据包。接着，使用字典文件对捕获到的握手数据包进行了破解，最终成功恢复了网络密码。</p>
+]]></content>
+      <categories>
+        <category>网络安全</category>
+      </categories>
+  </entry>
+  <entry>
     <title>文章分类</title>
     <url>/categories/index.html</url>
     <content><![CDATA[
