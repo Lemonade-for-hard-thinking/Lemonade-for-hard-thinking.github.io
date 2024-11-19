@@ -1,0 +1,314 @@
+<!DOCTYPE html><html lang="zh" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>编译原理实验三：TINY扩充语言的语法树生成 | 尼古拉斯.铁柱</title><meta name="author" content="铁柱帅哥"><meta name="copyright" content="铁柱帅哥"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="实验内容 （一）为Tiny语言扩充的语法  实现改写书写格式的新if语句； 扩充算术表达式的运算符号：  ++（前置自增1）、 --（前置自减1）运算符号（类似于C语言的++和--运算符号，但不需要完成后置的自增1和自减1）； 求余 %、乘方 ^；  扩充比较运算符号：  &lt;&#x3D;（小于等于）、 &gt;（大于）、 &gt;&#x3D;（大于等于）、 &lt;&gt;（不等于）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="编译原理实验三：TINY扩充语言的语法树生成">
+<meta property="og:url" content="https://lemonade-for-hard-thinking.github.io/2024/11/19/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86%E5%AE%9E%E9%AA%8C%E4%B8%89/index.html">
+<meta property="og:site_name" content="尼古拉斯.铁柱">
+<meta property="og:description" content="实验内容 （一）为Tiny语言扩充的语法  实现改写书写格式的新if语句； 扩充算术表达式的运算符号：  ++（前置自增1）、 --（前置自减1）运算符号（类似于C语言的++和--运算符号，但不需要完成后置的自增1和自减1）； 求余 %、乘方 ^；  扩充比较运算符号：  &lt;&#x3D;（小于等于）、 &gt;（大于）、 &gt;&#x3D;（大于等于）、 &lt;&gt;（不等于）">
+<meta property="og:locale">
+<meta property="og:image" content="https://lemonade-for-hard-thinking.github.io/img/background.jpg">
+<meta property="article:published_time" content="2024-11-19T06:33:53.000Z">
+<meta property="article:modified_time" content="2024-11-19T08:32:35.446Z">
+<meta property="article:author" content="铁柱帅哥">
+<meta property="article:tag" content="尼古拉斯.铁柱">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://lemonade-for-hard-thinking.github.io/img/background.jpg"><link rel="shortcut icon" href="/img/avatar.jpg"><link rel="canonical" href="https://lemonade-for-hard-thinking.github.io/2024/11/19/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86%E5%AE%9E%E9%AA%8C%E4%B8%89/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":true,"languages":{"hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":false,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Error',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '编译原理实验三：TINY扩充语言的语法树生成',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-11-19 16:32:35'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const now = new Date()
+          const hour = now.getHours()
+          const isNight = hour <= 7 || hour >= 19
+          if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+          else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">Loading...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+  window.addEventListener('load',() => { preloader.endLoading() })
+
+  if (false) {
+    document.addEventListener('pjax:send', () => { preloader.initLoading() })
+    document.addEventListener('pjax:complete', () => { preloader.endLoading() })
+  }
+})()</script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">20</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">4</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">7</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/background.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="尼古拉斯.铁柱"><img class="site-icon" src="/img/avatar.jpg"/><span class="site-name">尼古拉斯.铁柱</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> Search</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">编译原理实验三：TINY扩充语言的语法树生成</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2024-11-19T06:33:53.000Z" title="Created 2024-11-19 14:33:53">2024-11-19</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2024-11-19T08:32:35.446Z" title="Updated 2024-11-19 16:32:35">2024-11-19</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/">编译原理</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="编译原理实验三：TINY扩充语言的语法树生成"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="实验内容">实验内容</h2>
+<p><strong>（一）为Tiny语言扩充的语法</strong></p>
+<ol type="1">
+<li>实现改写书写格式的新<code>if</code>语句；</li>
+<li>扩充算术表达式的运算符号：
+<ul>
+<li><code>++</code>（前置自增1）、
+<code>--</code>（前置自减1）运算符号（类似于C语言的<code>++</code>和<code>--</code>运算符号，但不需要完成后置的自增1和自减1）；</li>
+<li>求余 <code>%</code>、乘方 <code>^</code>；</li>
+</ul></li>
+<li>扩充比较运算符号：
+<ul>
+<li><code>&lt;=</code>（小于等于）、 <code>&gt;</code>（大于）、
+<code>&gt;=</code>（大于等于）、
+<code>&lt;&gt;</code>（不等于）等运算符号；</li>
+</ul></li>
+<li>增加正则表达式，其支持的运算符号有：
+<ul>
+<li>或 <code>|</code> 、连接 <code>&amp;</code>、闭包
+<code>#</code>、括号 <code>()</code>、可选运算符号 <code>?</code>
+和基本正则表达式；</li>
+</ul></li>
+<li><code>for</code>语句的语法规则（类似于C语言的<code>for</code>语言格式）：
+<ul>
+<li>书写格式：<code>for(循环变量赋初值; 条件; 循环变量自增或自减1) 语句序列</code></li>
+</ul></li>
+<li><code>while</code>语句的语法规则（类似于C语言的<code>while</code>语言格式）：
+<ul>
+<li>书写格式：<code>while(条件) 语句序列 endwhile</code></li>
+</ul></li>
+</ol>
+<p><strong>（二）对应的语法规则分别为：</strong></p>
+<ol type="1">
+<li><p>把TINY语言原有的<code>if</code>语句书写格式 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">if_stmt --&gt; if exp then stmt-sequence end</span><br><span class="line">           | if exp then stmt-sequence else stmt-sequence end</span><br></pre></td></tr></table></figure>
+改写为： <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">if_stmt --&gt; if(exp) stmt-sequence else stmt-sequence</span><br><span class="line">           | if(exp) stmt-sequence</span><br></pre></td></tr></table></figure></p></li>
+<li><p><code>++</code>（前置自增1）、<code>--</code>（前置自减1）运算符号、求余
+<code>%</code>、乘方 <code>^</code>
+等运算符号的文法规则请自行组织。</p></li>
+<li><p><code>&lt; =</code>（小于等于）、<code>&gt;</code>（大于）、<code>&gt;=</code>（大于等于）、<code>&lt;&gt;</code>（不等于）等运算符号的文法规则请自行组织。</p></li>
+<li><p>为Tiny语言增加一种新的表达式——正则表达式，其支持的运算符号有：<code>|</code>、<code>&amp;</code>、<code>#</code>、<code>()</code>、<code>?</code>，以及基本正则表达式，对应的文法规则请自行组织。</p></li>
+<li><p>为Tiny语言增加一种新的语句，<code>ID ::= 正则表达式</code>
+（同时增加正则表达式的赋值运算符号 <code>::=</code>）</p></li>
+<li><p>为Tiny语言增加一个符合上述<code>for</code>循环的书写格式的文法规则；</p></li>
+<li><p>为Tiny语言增加一个符合上述<code>while</code>循环的书写格式的文法规则；</p></li>
+<li><p>为了实现以上的扩充或改写功能，还需要注意对原Tiny语言的文法规则做一些相应的改造处理。</p></li>
+</ol>
+<p>Tiny语言原来的文法规则，可参考：云盘中参考书P97及P136的文法规则。</p>
+<p><strong>实验要求</strong></p>
+<ol type="1">
+<li>提供一个源程序编辑的界面，以让用户输入源程序（可输入、可保存、可打开源程序）；</li>
+<li>可由用户选择是否生成语法树，并可查看所生成的语法树；</li>
+<li>实验3的实现只能选用的程序设计语言为：C++；</li>
+<li>要求应用程序的操作界面应为Windows界面；</li>
+<li>应该书写完善的软件文档。</li>
+</ol>
+<h2 id="文法规则">文法规则</h2>
+<p>​ 经过扩展之后的文法规则如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">stmt_sequence -&gt; statement &#123; ; statement &#125;</span><br><span class="line"></span><br><span class="line">statement -&gt; if_stmt | repeat_stmt | while_stmt | assign_stmt | read_stmt | write_stmt | for_stmt</span><br><span class="line"></span><br><span class="line">if_stmt -&gt; <span class="keyword">if</span> (exp) stmt_sequence [ <span class="keyword">else</span> stmt_sequence] end </span><br><span class="line"></span><br><span class="line">repeat_stmt -&gt; repeat stmt_sequence until exp</span><br><span class="line"></span><br><span class="line">while_stmt -&gt; <span class="keyword">while</span> (exp) stmt_sequence endwhile</span><br><span class="line"></span><br><span class="line">assign_stmt -&gt; <span class="built_in">id</span> ( := simple_exp | ::= RexOr ) | (++ | --) id </span><br><span class="line"></span><br><span class="line">read_stmt -&gt; read id</span><br><span class="line"></span><br><span class="line">write_stmt -&gt; write exp </span><br><span class="line"></span><br><span class="line">for_stmt -&gt; <span class="keyword">for</span> (assign_stmt ; exp ; assign_stmt) stmt_sequence endfor</span><br><span class="line"></span><br><span class="line">exp -&gt; simple_exp [ ( &lt; | = | &gt; | &lt;= | &gt;= | &lt;&gt; ) simple_exp ]</span><br><span class="line"></span><br><span class="line">simple_exp -&gt; term &#123; ( + | - ) term &#125;</span><br><span class="line"></span><br><span class="line">term -&gt; power &#123; ( * | / | % ) power &#125;</span><br><span class="line"></span><br><span class="line">power -&gt; factor&#123; ^ factor &#125;</span><br><span class="line"></span><br><span class="line">factor -&gt; number| id | ( exp )  </span><br><span class="line"></span><br><span class="line">RexOr -&gt; RexAnd&#123; \| RexAnd &#125;</span><br><span class="line"></span><br><span class="line">RexAnd -&gt; RexCS &#123; &amp; RexCS &#125;</span><br><span class="line"></span><br><span class="line">RexCS -&gt; RexBr [ # | ? ]</span><br><span class="line"></span><br><span class="line">RexBr -&gt; ID | ( RexOr ) </span><br><span class="line">    </span><br></pre></td></tr></table></figure>
+<p>​
+这里的文法规则以及后面的代码创建一个<code>SynaxTree</code>类的思路都借鉴了某问不知名学长发在<code>CSDN</code>上面的作业，当然也做了很多修改，学长发的作业链接是<code>https://blog.csdn.net/phshp/article/details/139010754?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_baidulandingword~default-0-139010754-blog-106891811.235^v43^pc_blog_bottom_relevance_base6&amp;spm=1001.2101.3001.4242.1&amp;utm_relevant_index=3</code>。</p>
+<h2 id="实验">实验</h2>
+<p>​ 老师给的整个代码大体上分为四部分：词法分析（文件<code>UTIL.H</code>
+、<code>SCAN.H</code>、<code>UTIL.C</code> 和
+<code>SCAN.C</code>，类似我们的实验一）、语法分析（<code>PARSE.H</code>
+和<code>PARSE.C</code>
+）、语义分析、代码生成，实验中我们大概要做的就是前两部分：对输入的代码进行词法分析，然后语法分析生成语法树（以老师说的那种自顶向下的方式）。我们复制的代码基本上就是在词法分析的文件<code>UTIL.H</code>
+、<code>SCAN.H</code>、<code>UTIL.C</code> 、
+<code>SCAN.C</code>以及语法分析的文件<code>PARSE.H</code>
+和<code>PARSE.C</code>，还有一些声明全局变量的文件<code>GLOBALS.H</code>。所以我们可以就看这几个文件。</p>
+<p>​
+为了显得不那么乱，我在写实验的时候是新建了一个<code>QT</code>的空项目，在里面创建一个类<code>SysnaxTree</code>，需要用的</p>
+<p>​ 我们先复制实验中我们需要用到的全局变量：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">enum</span> </span><br><span class="line">    <span class="comment">/* book-keeping tokens */</span></span><br><span class="line">   &#123;ENDFILE,ERROR,</span><br><span class="line">    <span class="comment">/* reserved words */</span></span><br><span class="line">    IF,THEN,ELSE,END,REPEAT,UNTIL,READ,WRITE,</span><br><span class="line">    <span class="comment">/* multicharacter tokens */</span></span><br><span class="line">    ID,NUM,</span><br><span class="line">    <span class="comment">/* special symbols */</span></span><br><span class="line">    ASSIGN,EQ,LT,PLUS,MINUS,TIMES,OVER,LPAREN,RPAREN,SEMI</span><br><span class="line">   &#125; TokenType;</span><br><span class="line"></span><br><span class="line"><span class="keyword">extern</span> <span class="type">int</span> lineno; <span class="comment">/* source line number for listing */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**************************************************/</span></span><br><span class="line"><span class="comment">/***********   Syntax tree for parsing ************/</span></span><br><span class="line"><span class="comment">/**************************************************/</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">enum</span> &#123;StmtK,ExpK&#125; NodeKind;</span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">enum</span> &#123;IfK,RepeatK,AssignK,ReadK,WriteK&#125; StmtKind;</span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">enum</span> &#123;OpK,ConstK,IdK&#125; ExpKind;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* ExpType is used for type checking */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">enum</span> &#123;Void,Integer,Boolean&#125; ExpType;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MAXCHILDREN 3</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">treeNode</span></span><br><span class="line">   &#123; <span class="keyword">struct</span> <span class="title class_">treeNode</span> * child[MAXCHILDREN];</span><br><span class="line">     <span class="keyword">struct</span> <span class="title class_">treeNode</span> * sibling;</span><br><span class="line">     <span class="type">int</span> lineno;</span><br><span class="line">     NodeKind nodekind;</span><br><span class="line">     <span class="keyword">union</span> &#123; StmtKind stmt; ExpKind exp;&#125; kind;</span><br><span class="line">     <span class="keyword">union</span> &#123; TokenType op;</span><br><span class="line">             <span class="type">int</span> val;</span><br><span class="line">             <span class="type">char</span> * name; &#125; attr;</span><br><span class="line">     ExpType type; <span class="comment">/* for type checking of exps */</span></span><br><span class="line">   &#125; TreeNode;</span><br></pre></td></tr></table></figure>
+<p>​
+我们在打开<code>SCAN.C</code>文件复制一些词法分析需要用到的变量：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">enum</span></span><br><span class="line">   &#123; START,INASSIGN,INCOMMENT,INNUM,INID,DONE &#125;</span><br><span class="line">   StateType;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* lexeme of identifier or reserved word */</span></span><br><span class="line"><span class="type">char</span> tokenString[MAXTOKENLEN<span class="number">+1</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">/* BUFLEN = length of the input buffer for</span></span><br><span class="line"><span class="comment">   source code lines */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> BUFLEN 256</span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">char</span> lineBuf[BUFLEN]; <span class="comment">/* holds the current line */</span></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> linepos = <span class="number">0</span>; <span class="comment">/* current position in LineBuf */</span></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> bufsize = <span class="number">0</span>; <span class="comment">/* current size of buffer string */</span></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> EOF_flag = FALSE; <span class="comment">/* corrects ungetNextChar behavior on EOF */</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="keyword">struct</span></span><br><span class="line">    &#123; <span class="type">char</span>* str;</span><br><span class="line">      TokenType tok;</span><br><span class="line">    &#125; reservedWords[MAXRESERVED]</span><br><span class="line">   = &#123;&#123;<span class="string">&quot;if&quot;</span>,IF&#125;,&#123;<span class="string">&quot;then&quot;</span>,THEN&#125;,&#123;<span class="string">&quot;else&quot;</span>,ELSE&#125;,&#123;<span class="string">&quot;end&quot;</span>,END&#125;,</span><br><span class="line">      &#123;<span class="string">&quot;repeat&quot;</span>,REPEAT&#125;,&#123;<span class="string">&quot;until&quot;</span>,UNTIL&#125;,&#123;<span class="string">&quot;read&quot;</span>,READ&#125;,</span><br><span class="line">      &#123;<span class="string">&quot;write&quot;</span>,WRITE&#125;&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>​
+里面的<code>linebuf</code>就是正在分析的代码文本，<code>bufsize</code>是其长度·，<code>linepos</code>是正在分析的位置，<code>EOF_flag</code>是文件尾标志。其中的<code>StateType</code>是我们在词法分析函数<code>getToken()</code>中需要使用的状态。我们可以将这些变量全都写到类里面。下面是我写的<code>Function.h</code>文件中的代码（代码中还没添加了扩展之后的文法规则需要用到的一些变量）：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">enum</span></span><br><span class="line"><span class="comment">/* book-keeping tokens */</span></span><br><span class="line">&#123;</span><br><span class="line">    ENDFILE, ERROR,</span><br><span class="line">    <span class="comment">/* reserved words */</span><span class="comment">//保留字</span></span><br><span class="line">    IF, THEN, ELSE, END, REPEAT, UNTIL, READ, WRITE,</span><br><span class="line">    <span class="comment">/* multicharacter tokens */</span></span><br><span class="line">    ID, NUM,</span><br><span class="line">    <span class="comment">/* special symbols */</span></span><br><span class="line">    ASSIGN, EQ, LT, PLUS, MINUS, TIMES, OVER, LPAREN, RPAREN, SEMI,</span><br><span class="line">&#125; TokenType;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">enum</span> &#123; StmtK, ExpK &#125; NodeKind;</span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">enum</span> &#123; IfK, RepeatK, AssignK, ReadK, WriteK&#125; StmtKind;</span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">enum</span> &#123; OpK, ConstK, IdK &#125; ExpKind;</span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">enum</span> &#123; Void, Integer, Boolean &#125; ExpType;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* states in scanner DFA */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">enum</span></span><br><span class="line">&#123;</span><br><span class="line">    START, INASSIGN, INCOMMENT, INNUM, INID, DONE,</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">StateType;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">treeNode</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">treeNode</span>* child[MAXCHILDREN];</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">treeNode</span>* sibling;</span><br><span class="line">    <span class="type">int</span> lineno;</span><br><span class="line">    NodeKind nodekind;</span><br><span class="line">    <span class="keyword">union</span> &#123; StmtKind stmt; ExpKind exp; &#125; kind;</span><br><span class="line">    <span class="keyword">union</span> &#123;</span><br><span class="line">        TokenType op;</span><br><span class="line">        <span class="type">int</span> val;</span><br><span class="line">        <span class="type">char</span> name[MAXTOKENLEN];</span><br><span class="line">    &#125; attr;</span><br><span class="line">    ExpType type; <span class="comment">/* for type checking of exps */</span></span><br><span class="line">&#125; TreeNode;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">SynaxTree</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    QStringList Input_Code;<span class="comment">//要分析的源代码</span></span><br><span class="line">    QString lineBuf;<span class="comment">//当前分析的某行代码</span></span><br><span class="line">    <span class="type">int</span> bufsize;<span class="comment">//当前代码行的长度</span></span><br><span class="line">    <span class="type">int</span> lineno;<span class="comment">//当前行</span></span><br><span class="line">    <span class="type">int</span> linepos;<span class="comment">//当前列</span></span><br><span class="line"></span><br><span class="line">    <span class="type">bool</span> inComment = FALSE;<span class="comment">//扫描注释标志</span></span><br><span class="line">    <span class="type">bool</span> EOF_flag = FALSE;<span class="comment">//末尾标志</span></span><br><span class="line">    <span class="type">bool</span> Error = FALSE;<span class="comment">//出错标志</span></span><br><span class="line"></span><br><span class="line">    QString Lex_ana_text;<span class="comment">//词法分析的文本</span></span><br><span class="line">    QString tokenString;<span class="comment">//当前扫描到的单词</span></span><br><span class="line">    TokenType token;<span class="comment">//当前token</span></span><br><span class="line">    QStringList Errorlist;<span class="comment">//error信息的列表</span></span><br><span class="line">    TreeNode* BeginNode;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//保存关键字，关键字中删去then。添加了for、endfor、while、endwhile。</span></span><br><span class="line">    QMap&lt;QString, TokenType&gt;reservedWords = &#123; &#123;<span class="string">&quot;if&quot;</span>,IF&#125;,&#123;<span class="string">&quot;else&quot;</span>,ELSE&#125;,&#123;<span class="string">&quot;repeat&quot;</span>,REPEAT&#125;,&#123;<span class="string">&quot;until&quot;</span>,UNTIL&#125;,&#123;<span class="string">&quot;read&quot;</span>,READ&#125;,&#123;<span class="string">&quot;write&quot;</span>,WRITE&#125;,&#123;<span class="string">&quot;for&quot;</span>,FOR&#125;,</span><br><span class="line">                                               &#123;<span class="string">&quot;while&quot;</span>,WHILE&#125;,&#123;<span class="string">&quot;endwhile&quot;</span>,ENDWHILE&#125; ,&#123;<span class="string">&quot;end&quot;</span>,END &#125;,&#123;<span class="string">&quot;endfor&quot;</span>,ENDFOR&#125; &#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">//我们需要用到的函数</span></span><br><span class="line"></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>​
+然后我们开始找一下我们需要使用的函数，首先我们肯定要找词法分析相关函数。我们打开<code>SCAN.C</code>文件，里面的几个函数我们全部都需要：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> <span class="type">int</span> <span class="title">getNextChar</span><span class="params">(<span class="type">void</span>)</span></span>;<span class="comment">//得到下一个字符</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">ungetNextChar</span><span class="params">(<span class="type">void</span>)</span></span>;<span class="comment">//退回上一个字符</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">static</span> TokenType <span class="title">reservedLookup</span> <span class="params">(<span class="type">char</span> * s)</span></span>;<span class="comment">//查看字符串s是否为关键字（保留字）</span></span><br><span class="line"></span><br><span class="line"><span class="function">TokenType <span class="title">getToken</span><span class="params">(<span class="type">void</span>)</span></span>;<span class="comment">//得到Token，这个是词法分析最关键的函数</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>​
+这里面复制过来的几个函数有可能不可以直接用，需要稍微修改一下。根据你自己的要求修改就可以了。</p>
+<p>​
+完成我们的词法分析部分之后，我们就开始复制语法分析部分相关的代码。我们先打开<code>UTIL.C</code>文件，我们需要里面的新建节点的函数，里面还有一个<code>printToken</code>函数，是打印词法分析的内容的，可以要也可以不要。，我们先复制过来下面两个新建节点的函数：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">TreeNode * <span class="title">newStmtNode</span><span class="params">(StmtKind)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function">TreeNode * <span class="title">newExpNode</span><span class="params">(ExpKind)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>​
+然后我们在打开<code>PARSE.C</code>文件，把下面几个函数全部复制过来：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> TreeNode * <span class="title">stmt_sequence</span><span class="params">(<span class="type">void</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="type">static</span> TreeNode * <span class="title">statement</span><span class="params">(<span class="type">void</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="type">static</span> TreeNode * <span class="title">if_stmt</span><span class="params">(<span class="type">void</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="type">static</span> TreeNode * <span class="title">repeat_stmt</span><span class="params">(<span class="type">void</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="type">static</span> TreeNode * <span class="title">assign_stmt</span><span class="params">(<span class="type">void</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="type">static</span> TreeNode * <span class="title">read_stmt</span><span class="params">(<span class="type">void</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="type">static</span> TreeNode * <span class="title">write_stmt</span><span class="params">(<span class="type">void</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="type">static</span> TreeNode * <span class="title">exp</span><span class="params">(<span class="type">void</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="type">static</span> TreeNode * <span class="title">simple_exp</span><span class="params">(<span class="type">void</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="type">static</span> TreeNode * <span class="title">term</span><span class="params">(<span class="type">void</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="type">static</span> TreeNode * <span class="title">factor</span><span class="params">(<span class="type">void</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">syntaxError</span><span class="params">(<span class="type">char</span> * message)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">match</span><span class="params">(TokenType expected)</span></span>;	</span><br><span class="line"></span><br><span class="line"><span class="function">TreeNode * <span class="title">parse</span><span class="params">(<span class="type">void</span>)</span></span>;<span class="comment">//这个是整个语法分析的开始</span></span><br></pre></td></tr></table></figure>
+<p>​
+然后我们基本上就复制完代码了，我们就根据我们的文法规则来修改代码了。首先根据我们的需要在<code>TokenType</code>,<code>StmKind</code>，<code>StateType</code>里面添加完变量之后，我们需要修改<code>getToKen</code>函数使其能够识别我们新添加的<code>TokenType</code>。</p>
+<p>​
+然后我们就可以可是添加语句的递归下降分析语句了，我们写代码的时候照着原有的代码模式写就可以了，如下面我想添加<code>for</code>语句的时候，我们先看一下文法规则：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">for_stmt -&gt; <span class="keyword">for</span> (assign_stmt ; exp ; assign_stmt) stmt_sequence endfor</span><br></pre></td></tr></table></figure>
+<p>​
+然后写代码，写代码就是语句中有什么我们就匹配什么，遇到需要其他的语句我们就调用函数：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">TreeNode* <span class="title">SynaxTree::for_stmt</span><span class="params">(<span class="type">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    TreeNode* t = <span class="built_in">newStmtNode</span>(ForK);<span class="comment">//创建ForK的语句节点</span></span><br><span class="line">    <span class="built_in">match</span>(FOR);<span class="comment">//匹配&quot;for&quot;关键字</span></span><br><span class="line">    <span class="built_in">match</span>(LPAREN);<span class="comment">//匹配左括号</span></span><br><span class="line">    <span class="keyword">if</span> (t != <span class="literal">NULL</span>) t-&gt;child[<span class="number">0</span>] = <span class="built_in">assign_stmt</span>();<span class="comment">//递归分析assign_stmt语句</span></span><br><span class="line">    <span class="built_in">match</span>(SEMI);<span class="comment">//匹配&#x27;;&#x27;符号</span></span><br><span class="line">    <span class="keyword">if</span> (t != <span class="literal">NULL</span>) t-&gt;child[<span class="number">1</span>] = <span class="built_in">exp</span>();<span class="comment">//递归分析exp语句</span></span><br><span class="line">    <span class="built_in">match</span>(SEMI);<span class="comment">//匹配&#x27;;&#x27;符号</span></span><br><span class="line">    <span class="keyword">if</span> (t != <span class="literal">NULL</span>)t-&gt;child[<span class="number">2</span>] = <span class="built_in">assign_stmt</span>();<span class="comment">//递归分析assign_stmt语句</span></span><br><span class="line">    <span class="built_in">match</span>(RPAREN);<span class="comment">//匹配右括号</span></span><br><span class="line">    <span class="keyword">if</span> (t != <span class="literal">NULL</span>)t-&gt;child[<span class="number">3</span>] = <span class="built_in">stmt_sequence</span>();<span class="comment">//递归分析stmt_sequence语句</span></span><br><span class="line">    <span class="built_in">match</span>(ENDFOR);<span class="comment">//匹配关键字&quot;endfor&quot;，我的文法规则中for循环是以endfor结束的，可以换</span></span><br><span class="line">    <span class="keyword">return</span> t;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="https://lemonade-for-hard-thinking.github.io">铁柱帅哥</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="https://lemonade-for-hard-thinking.github.io/2024/11/19/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86%E5%AE%9E%E9%AA%8C%E4%B8%89/">https://lemonade-for-hard-thinking.github.io/2024/11/19/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86%E5%AE%9E%E9%AA%8C%E4%B8%89/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="/img/background.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2024/11/15/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E8%AF%BE%E7%A8%8B%E4%BD%9C%E4%B8%9A/" title="网络安全课程作业"><img class="cover" src="/img/background.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next</div><div class="next_info">网络安全课程作业</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E5%86%85%E5%AE%B9"><span class="toc-number">1.</span> <span class="toc-text">实验内容</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E6%B3%95%E8%A7%84%E5%88%99"><span class="toc-number">2.</span> <span class="toc-text">文法规则</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C"><span class="toc-number">3.</span> <span class="toc-text">实验</span></a></li></ol></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By 铁柱帅哥</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, '']
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typesetPromise()
+}</script></div><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">Search</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  Loading the Database</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="Search for Posts" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.13.0"></script></div></div></body></html>
