@@ -2677,6 +2677,28 @@ alt="image.png" />
       </categories>
   </entry>
   <entry>
+    <title>尺取法</title>
+    <url>/2025/02/11/%E5%B0%BA%E5%8F%96%E6%B3%95/</url>
+    <content><![CDATA[<p>尺取法：又称双指针（Two
+Pointers）,是算法竞赛中常用的一个优化技巧，又来解决序列的区间问题。</p>
+<h3 id="反向扫描">反向扫描</h3>
+<p>例题2.1 找指定和的整数对</p>
+<p>​ 问题描述：输入<span
+class="math inline">\(n（n&lt;=100000）\)</span>个整数，放在数组a[]中，找出其中的两个数，他们的和等于整数<span
+class="math inline">\(m\)</span>，假设肯定有解，所有的整数均是<code>int</code>型。</p>
+<p>​ 说明：输入样例的第一行为数组a[]，第二行是<span
+class="math inline">\(m=28\)</span>，输出样例的<span
+class="math inline">\(5\)</span>和<span
+class="math inline">\(23\)</span>，相加得<span
+class="math inline">\(28\)</span>。</p>
+<p>​ 输入样例：21 4 5 6 13 65 32 9 23</p>
+<p>​ 输出样例： 5 23</p>
+]]></content>
+      <categories>
+        <category>基本算法</category>
+      </categories>
+  </entry>
+  <entry>
     <title>文章分类</title>
     <url>/categories/index.html</url>
     <content><![CDATA[
